@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1 id="myh1"></h1>
+    <button id="btn1">进货</button>
+    <button id="btn2">卖货</button>
+    <button id="btn3">开除员工</button>
+    <input type="text" id="kuang">
+    <button id="btn4">进这么多货</button>
+
+    <!-- 可预测状态容器，用于管理数据、注册视图 -->
+<script src="https://cdn.bootcdn.net/ajax/libs/redux/4.0.5/redux.min.js"></script>
+<script>
+    // 1、创建初始State（数据，状态）
+    let initState={
+        money:1000,
+        people:5,
+        goods:4
+    }
+    // 目的：用redux库管理好initState中的数据
+    // 2、创建reducer函数，接收两参数，参数1：现在的state  参数2：action：操作对象，必须右type属性
+    // 2.1  reducer函数接收两个参数，返回一个新的state对象
+    function reducer(state,action){
+        // 2.2  判断state是不是空，如果是空说明是第一次使用，那么就需要将initState对象绑到state上
+        if(state==undefined){
+            state=initState;
+            return state;
+        }
+        // 2.3如果state不是空，那么定义action的type属性(一般用大写)
+        if(action.type=='BUYGOODS'){
+            state={...state,...{goods:state.goods+1,money:state.money-5}}
+            return state
+        }else if(action.type=='SELLGOODS'){
+            if(state.goods>0){
+                
+                return {...state,...{goods:state.goods-1,money:state.money+10}}
+            }else{
+                return {...state,...{goods:state.goods,money:state.money}}
+            }
+        }else if(action.type=='DISMISS'){
+            if(state.people>0){
+                
+                return {...state,...{people:state.people-1}}
+            }else{
+                return {...state,...{people:state.people}}
+            }
+        }else if(action.type=='BUYMORE'){
+            return {...state,...{goods:state.goods+action.numValue,money:state.money-5*action.numValue}}
+        }
+
+    }
+    // 3、创建一个仓库
+    let store = Redux.createStore(reducer);
+    // 查看仓库是否被接管（也就是在控制台显示数据）
+    console.log(store.getState());
+    let buy=document.getElementById('btn1');
+    let sell=document.getElementById('btn2');
+    let dismiss=document.getElementById('btn3');
+    let kuang=document.getElementById('kuang');
+    let buyMore=document.getElementById('btn4');
+    buy.onclick=function(){
+    // 4、dispatch发出命令执行操作,里面的对象相当于是action
+        store.dispatch({type:'BUYGOODS'})
+        console.log(store.getState());
+    }
+    sell.onclick=function(){
+        store.dispatch({type:'SELLGOODS'})
+        console.log(store.getState());
+    }
+    dismiss.onclick=function(){
+        store.dispatch({type:'DISMISS'})
+        console.log(store.getState());
+    }
+    buyMore.onclick=function(){
+        let numValue = Number(kuang.value)
+        store.dispatch({type:'BUYMORE',numValue})
+        console.log(store.getState());
+    }
+    // =========================================
+    // subscribe视图订阅
+    // 1、注册视图：
+    store.subscribe(renderFun);
+    // 2、编写函数：每当数据发生改变的时候，renderFun函数都会发生变化
+    function renderFun(){
+    let myh1=document.getElementById('myh1');
+    // 3、将数据插入相应的标签
+    myh1.innerHTML=`当前货物总量有${store.getState().goods}当前余额${store.getState().money}当前员工${store.getState().people}`
+    }
+    //4、 调用函数
+    renderFun();
+
+</script>
+</body>
+</html>
